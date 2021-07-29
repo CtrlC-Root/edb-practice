@@ -5,7 +5,9 @@ def configure(ctx):
 
     ctx.find_program('gcc', var='CPP')
     ctx.env.append_value('CPPFLAGS', ['-std=c++20', '-Wall', '-Werror'])
-    ctx.env.append_value('LFLAGS', ['-lstdc++'])
+    ctx.env.append_value('LFLAGS', ['-lstdc++', '-ltbb'])
+
+    # TODO: use pkg-config for tbb?
 
 
 def build(ctx):
