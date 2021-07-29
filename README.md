@@ -7,3 +7,7 @@
   * https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
 * C++ Style
   * [Typedef Types](https://stackoverflow.com/a/612476/937006)
+* [Intel Threading Building Blocks](https://github.com/oneapi-src/oneTBB)
+  * https://spec.oneapi.io/versions/latest/elements/oneTBB/source/nested-index.html
+* [NNG](https://nng.nanomsg.org/)
+  * https://nng.nanomsg.org/man/index.html
