@@ -1,3 +1,8 @@
+# waf build system
+.lock-waf*
+.waf*
+build
+
 # Prerequisites
 *.d
 

@@ -1,0 +1,8 @@
+def build(ctx):
+    """Build the project."""
+
+    # compile
+    ctx(rule='${CPP} -c -o ${TGT} ${CPPFLAGS} ${SRC}', target="main.o", source="main.cpp")
+
+    # link
+    ctx(rule='${CPP} -o ${TGT} ${LFLAGS} ${SRC}', target="dict", source=["main.o"])
