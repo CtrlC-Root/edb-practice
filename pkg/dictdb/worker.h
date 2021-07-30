@@ -7,7 +7,7 @@
 #include "data.h"
 
 
-// XXX
+// Worker context.
 typedef struct {
   std::shared_ptr<std::thread> thread;
   std::shared_ptr<dictdb_t> db;
@@ -15,5 +15,5 @@ typedef struct {
   bool cancel;
 } dictdb_worker_context_t;
 
-// XXX
+// Worker entry point.
 void worker(std::shared_ptr<dictdb_worker_context_t> context);

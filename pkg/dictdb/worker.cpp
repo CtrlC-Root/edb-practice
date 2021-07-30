@@ -1,14 +1,13 @@
 #include "worker.h"
 
-// XXX
-#include <iostream>
+// POSIX
 #include <unistd.h>     // close
 
 // DictDB
 #include <protocol.h>
 
 
-// XXX
+// Worker entry point.
 void worker(std::shared_ptr<dictdb_worker_context_t> context) {
   ssize_t bytes;
   std::vector<std::byte> buffer;
@@ -58,7 +57,8 @@ void worker(std::shared_ptr<dictdb_worker_context_t> context) {
     // XXX
     bytes = write(context->client_socket, (char*) &result, 1);
     if (bytes < 1) {
-      std::cout << "partial write" << std::endl;
+      // TODO: handle error
+      break;
     }
   }
 

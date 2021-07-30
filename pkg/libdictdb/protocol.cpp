@@ -1,5 +1,6 @@
 #include "protocol.h"
 
+
 // Encode an operation into a byte buffer.
 void encode_operation(std::vector<std::byte>& buffer, const dictdb_op_t& operation) {
   // assert operation.word.size() > 0

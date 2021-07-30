@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+
 /**
  * Database operation type.
  */
