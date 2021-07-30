@@ -1,17 +1,8 @@
 def build(ctx):
     """Build the project."""
 
-    # compile
-    objects = {'main.o': 'main.cpp', 'worker.o': 'worker.cpp'}
-
-    for object, source in objects.items():
-        ctx(
-            rule='${CPP} -c -o ${TGT} ${CPPFLAGS} ${SRC}',
-            target=object,
-            source=source)
-
-    # link
-    ctx(
-        rule='${CPP} -o ${TGT} ${LFLAGS} ${SRC}',
+    ctx.program(
         target='dictdb',
-        source=list(objects.keys()))
+        source=['main.cpp', 'worker.cpp'],
+        lib=['tbb'],
+        use='libdictdb')

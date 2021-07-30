@@ -11,7 +11,7 @@
 #include <unistd.h>     // close
 
 // DictDB
-#include "operation.h"
+#include <protocol.h>
 
 
 // Application entry point.
@@ -65,14 +65,7 @@ int main(int argc, char* argv[]) {
 
   // XXX
   std::vector<std::byte> buffer;
-  buffer.push_back(static_cast<std::byte>(operation.type));
-  buffer.push_back(static_cast<std::byte>(operation.word.size()));
-
-  std::transform(
-    operation.word.begin(),
-    operation.word.end(),
-    std::back_inserter(buffer),
-    [](unsigned char c) { return std::byte{c}; });
+  encode_operation(buffer, operation);
 
   ssize_t bytes = write(client_socket, &buffer[0], buffer.size());
   if (bytes < buffer.size()) {

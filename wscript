@@ -1,17 +1,23 @@
 #!/usr/bin/env waf
 
+def options(ctx):
+    """Create options."""
+
+    ctx.load('compiler_cxx')
+
+
 def configure(ctx):
     """Configure the project."""
 
-    ctx.find_program('gcc', var='CPP')
-    ctx.env.append_value('CPPFLAGS', ['-std=c++20', '-Wall', '-Werror'])
-    ctx.env.append_value('LFLAGS', ['-lstdc++', '-ltbb'])
+    # linux: -std=c++20
+    # macos: -std=c++2a
 
-    # TODO: use pkg-config for tbb?
-
+    ctx.load('compiler_cxx')
+    ctx.env.append_value('CXXFLAGS', ['-std=c++2a', '-Wall', '-Werror'])
 
 def build(ctx):
     """Build the project."""
 
+    ctx.recurse('pkg/libdictdb')
     ctx.recurse('pkg/dictdb')
     ctx.recurse('pkg/dict')

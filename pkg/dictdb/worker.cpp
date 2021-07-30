@@ -5,7 +5,7 @@
 #include <unistd.h>     // close
 
 // DictDB
-#include "operation.h"
+#include <protocol.h>
 
 // XXX
 #define BUFFER_SIZE 2048
@@ -14,12 +14,12 @@
 // XXX
 void worker(std::shared_ptr<dictdb_worker_context_t> context) {
   ssize_t bytes;
-  uint8_t buffer[BUFFER_SIZE];
-  memset(&buffer, 0, BUFFER_SIZE);
+  std::vector<std::byte> buffer;
 
   while (!context->cancel) {
     // https://man7.org/linux/man-pages/man2/read.2.html
-    bytes = read(context->client_socket, buffer, BUFFER_SIZE);
+    buffer.resize(2048);
+    bytes = read(context->client_socket, &buffer[0], buffer.size());
     if (bytes == -1) {
       // TODO: handle error
       break;
@@ -30,13 +30,10 @@ void worker(std::shared_ptr<dictdb_worker_context_t> context) {
       break;
     }
 
-    buffer[bytes] = 0;
+    buffer.resize(bytes);
 
     dictdb_op_t operation;
-    operation.type = OperationType{buffer[0]};
-    operation.word = std::string((char*) &buffer[2], buffer[1]);
-
-    // std::cout << "recv(" << bytes << "): " << operation.word << std::endl;
+    decode_operation(buffer, operation);
 
     // XXX
     uint8_t result = 0;
