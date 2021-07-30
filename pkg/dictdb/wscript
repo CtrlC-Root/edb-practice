@@ -2,13 +2,16 @@ def build(ctx):
     """Build the project."""
 
     # compile
-    ctx(
-        rule='${CPP} -c -o ${TGT} ${CPPFLAGS} ${SRC}',
-        target='main.o',
-        source='main.cpp')
+    objects = {'main.o': 'main.cpp', 'worker.o': 'worker.cpp'}
+
+    for object, source in objects.items():
+        ctx(
+            rule='${CPP} -c -o ${TGT} ${CPPFLAGS} ${SRC}',
+            target=object,
+            source=source)
 
     # link
     ctx(
         rule='${CPP} -o ${TGT} ${LFLAGS} ${SRC}',
         target='dictdb',
-        source=['main.o'])
+        source=list(objects.keys()))
