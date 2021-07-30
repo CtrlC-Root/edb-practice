@@ -10,20 +10,8 @@
 #include <sys/un.h>     // sockaddr_un
 #include <unistd.h>     // close
 
-
-// XXX
-typedef enum class OperationType:uint8_t {
-  PING = 0,
-  INSERT = 1,
-  SEARCH = 2,
-  DELETE = 3
-} dict_op_type_t;
-
-// XXX
-typedef struct {
-  dict_op_type_t type;
-  std::string word;
-} dict_op_t;
+// DictDB
+#include "operation.h"
 
 
 // Application entry point.
@@ -36,7 +24,7 @@ int main(int argc, char* argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  dict_op_t operation;
+  dictdb_op_t operation;
   operation.word = args[1];
 
   if (operation.word.size() > 254) {
@@ -91,13 +79,13 @@ int main(int argc, char* argv[]) {
     std::cerr << "partial write" << std::endl;
   }
 
-  std::byte result;
+  uint8_t result;
   bytes = read(client_socket, &result, 1);
   if (bytes != 1) {
     std::cerr << "partial read" << std::endl;
   }
 
-  std::cout << static_cast<uint8_t>(result) << std::endl;
+  std::cout << "recv(1): " << (int) result << std::endl;
 
   // XXX
   rv = close(client_socket);
