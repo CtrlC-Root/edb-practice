@@ -7,9 +7,6 @@
 // DictDB
 #include <protocol.h>
 
-// XXX
-#define BUFFER_SIZE 2048
-
 
 // XXX
 void worker(std::shared_ptr<dictdb_worker_context_t> context) {
