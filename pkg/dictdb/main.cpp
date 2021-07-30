@@ -87,6 +87,7 @@ int main(int argc, char* argv[]) {
   }
 
   // XXX
+  // https://www.man7.org/linux/man-pages/man2/poll.2.html
   struct pollfd server_poll;
   server_poll.fd = server_socket;
   server_poll.events = POLLIN;
@@ -98,6 +99,7 @@ int main(int argc, char* argv[]) {
   // process requests
   running = true;
   while (running) {
+    // https://www.man7.org/linux/man-pages/man2/poll.2.html
     server_poll.revents = 0;
     rv = poll(&server_poll, 1, 200);
 
