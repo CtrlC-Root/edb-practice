@@ -11,6 +11,7 @@
 #include <sys/socket.h> // socket, AF_*?
 #include <sys/un.h>     // sockaddr_un
 #include <unistd.h>     // close
+#include <poll.h>       // pollfd, poll
 
 // DictDB
 #include "data.h"
@@ -86,18 +87,34 @@ int main(int argc, char* argv[]) {
   }
 
   // XXX
+  struct pollfd server_poll;
+  server_poll.fd = server_socket;
+  server_poll.events = POLLIN;
+  server_poll.revents = 0;
+
+  // XXX
   std::vector<std::shared_ptr<dictdb_worker_context_t>> workers;
 
   // process requests
   running = true;
   while (running) {
-    // TODO
-    int client_socket = accept(server_socket, NULL, NULL);
+    server_poll.revents = 0;
+    rv = poll(&server_poll, 1, 200);
+
+    if ((server_poll.revents & POLLERR) != 0) {
+      std::cerr << "server socket error" << std::endl;
+      running = false;
+      break;
+    }
+
+    if ((server_poll.revents & POLLIN) == 0) {
+      continue;
+    }
 
     // XXX
     auto context = std::make_shared<dictdb_worker_context_t>();
     context->db = db;
-    context->client_socket = client_socket;
+    context->client_socket = accept(server_socket, NULL, NULL);
     context->cancel = false;
     context->thread = std::make_shared<std::thread>(worker, context);
 
