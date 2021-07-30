@@ -1,5 +1,7 @@
 def build(ctx):
-    """Build the project."""
+    """
+    Build the project.
+    """
 
     ctx.program(
         target='dictdb',

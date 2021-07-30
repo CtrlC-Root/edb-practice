@@ -1,13 +1,18 @@
-#!/usr/bin/env waf
+#!/usr/bin/env python
+
 
 def options(ctx):
-    """Create options."""
+    """
+    Define configuration options.
+    """
 
     ctx.load('compiler_cxx')
 
 
 def configure(ctx):
-    """Configure the project."""
+    """
+    Configure the project.
+    """
 
     # linux: -std=c++20
     # macos: -std=c++2a
@@ -15,8 +20,11 @@ def configure(ctx):
     ctx.load('compiler_cxx')
     ctx.env.append_value('CXXFLAGS', ['-std=c++2a', '-Wall', '-Werror'])
 
+
 def build(ctx):
-    """Build the project."""
+    """
+    Build the project.
+    """
 
     ctx.recurse('pkg/libdictdb')
     ctx.recurse('pkg/dictdb')
