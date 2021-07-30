@@ -36,10 +36,33 @@ void worker(std::shared_ptr<dictdb_worker_context_t> context) {
     operation.type = OperationType{buffer[0]};
     operation.word = std::string((char*) &buffer[2], buffer[1]);
 
-    std::cout << "recv(" << bytes << "): " << operation.word << std::endl;
+    // std::cout << "recv(" << bytes << "): " << operation.word << std::endl;
 
-    buffer[0] = 128;
-    bytes = write(context->client_socket, (char*) &buffer, 1);
+    // XXX
+    uint8_t result = 0;
+
+    switch (operation.type) {
+      case OperationType::PING:
+        result = 128;
+        break;
+
+      case OperationType::INSERT:
+        context->db->words.insert(std::pair<std::string, bool>(operation.word, true));
+        result = 1;
+        break;
+
+      case OperationType::SEARCH:
+        result = context->db->words.count(operation.word);
+        break;
+
+      case OperationType::DELETE:
+        context->db->words.erase(operation.word);
+        result = 1;
+        break;
+    }
+
+    // XXX
+    bytes = write(context->client_socket, (char*) &result, 1);
     if (bytes < 1) {
       std::cout << "partial write" << std::endl;
     }
