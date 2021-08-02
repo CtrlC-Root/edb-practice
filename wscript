@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import os
+
 
 def options(ctx):
     """
@@ -18,6 +20,9 @@ def configure(ctx):
     # macos: -std=c++2a
 
     ctx.load('compiler_cxx')
+    ctx.env.append_value('INCLUDES', [
+        os.path.join(ctx.path.abspath(), 'vendor/cxxopts-2.2.1/include')])
+
     ctx.env.append_value('CXXFLAGS', ['-std=c++2a', '-Wall', '-Werror'])
 
 

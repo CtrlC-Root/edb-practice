@@ -13,6 +13,9 @@
 #include <unistd.h>     // close
 #include <poll.h>       // pollfd, poll
 
+// CxxOpts
+#include <cxxopts.hpp>
+
 // DictDB
 #include "data.h"
 #include "worker.h"
@@ -38,6 +41,29 @@ void handle_signal(int sig) {
 
 // Application entry point.
 int main(int argc, char* argv[]) {
+  // parse command line arguments
+  cxxopts::Options options("dictdb", "dictionary database server");
+  options.add_options()
+    ("h,help", "Display usage help", cxxopts::value<bool>()->default_value("false"))
+    ("s,socket", "Socket file", cxxopts::value<std::string>()->default_value("dictdb.socket"))
+    ("b,backlog", "Connection backlog", cxxopts::value<uint8_t>()->default_value("32"))
+    ("w,workers", "Worker threads", cxxopts::value<uint8_t>()->default_value("4"));
+
+  auto args = options.parse(argc, argv);
+  if (args.count("help")) {
+    std::cout << options.help() << std::endl;
+    exit(EXIT_SUCCESS);
+  }
+
+  auto socket_file = args["socket"].as<std::string>();
+  auto socket_backlog = args["backlog"].as<uint8_t>();
+  auto worker_threads = args["workers"].as<uint8_t>();
+
+  if (worker_threads == 0) {
+    std::cerr << "cannot run with zero worker threads" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
   // register signal handler for relevant signals
   struct sigaction sa;
   sigemptyset(&sa.sa_mask);
@@ -73,7 +99,7 @@ int main(int argc, char* argv[]) {
   struct sockaddr_un addr;
   memset(&addr, 0, sizeof(struct sockaddr_un));
   addr.sun_family = AF_UNIX;
-  strncpy(addr.sun_path, "socket", sizeof(addr.sun_path) - 1);  // XXX: unix socket file path
+  strncpy(addr.sun_path, socket_file.c_str(), sizeof(addr.sun_path) - 1);
 
   int rv = bind(server_socket, (struct sockaddr *) &addr, sizeof(struct sockaddr_un));
   if (rv == -1) {
@@ -81,7 +107,7 @@ int main(int argc, char* argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  rv = listen(server_socket, 32); // XXX: backlog size?
+  rv = listen(server_socket, socket_backlog);
   if (rv == -1) {
     std::cerr << "failed to listen on socket" << std::endl;
     exit(EXIT_FAILURE);
@@ -91,7 +117,7 @@ int main(int argc, char* argv[]) {
   auto client_sockets = std::make_shared<dictdb_socket_queue_t>();
   std::vector<std::shared_ptr<dictdb_worker_context_t>> workers;
 
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < worker_threads; i++) {
     auto context = std::make_shared<dictdb_worker_context_t>();
     context->db = db;
     context->client_sockets = client_sockets;
@@ -158,7 +184,7 @@ int main(int argc, char* argv[]) {
   }
 
   // remove the socket file
-  rv = remove("socket");  // XXX: unix socket file path
+  rv = remove(socket_file.c_str());
   if (rv == -1) {
     std::cerr << "failed to remove socket file" << std::endl;
     exit(EXIT_FAILURE);
