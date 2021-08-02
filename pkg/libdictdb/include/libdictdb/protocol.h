@@ -3,6 +3,10 @@
 // C++ Standard Library
 #include <string>
 #include <vector>
+#include <stdexcept>    // runtime_error
+
+// POSIX
+#include <sys/types.h>  // ssize_t
 
 
 /**

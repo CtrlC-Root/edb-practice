@@ -62,15 +62,15 @@ void send_message(int fd, std::vector<std::byte>& buffer) {
     // https://man7.org/linux/man-pages/man2/write.2.html
     bytes = write(fd, &buffer[index], buffer.size() - index);
     if (bytes == 0) {
-      // TODO: wrote no bytes (socket is likely closed)
-      break;
+      throw std::runtime_error("socket closed");
     }
 
     index += bytes;
   } while (bytes != -1 && index < buffer.size());
 
-  // TODO: proper error handling
-  assert(bytes != -1);
+  if (bytes == -1) {
+    throw std::runtime_error("socket error");
+  }
 }
 
 // Read a message from a file into a buffer.
@@ -84,8 +84,7 @@ void receive_message(int fd, std::vector<std::byte>& buffer) {
     // https://man7.org/linux/man-pages/man2/read.2.html
     bytes = read(fd, &buffer[index], buffer.size() - index);
     if (bytes == 0) {
-      // TODO: read no bytes (socket is likely closed)
-      break;
+      throw std::runtime_error("socket closed");
     }
 
     if (index == 0) {
@@ -96,6 +95,7 @@ void receive_message(int fd, std::vector<std::byte>& buffer) {
     index += bytes;
   } while (bytes != -1 && index < buffer.size());
 
-  // TODO: proper error handling
-  assert(bytes != -1);
+  if (bytes == -1) {
+    throw std::runtime_error("socket error");
+  }
 }
