@@ -75,6 +75,8 @@ Libraries:
 
 Articles:
 
+* http://beej.us/guide/bgipc/html/single/bgipc.html
+* https://momjian.us/main/blogs/pgblog/2012.html#June_6_2012
 * https://attractivechaos.wordpress.com/2018/08/31/a-survey-of-argument-parsing-libraries-in-c-c/
 * https://gcc.gnu.org/projects/cxx-status.html
 * https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
