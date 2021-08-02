@@ -16,19 +16,19 @@ typedef enum class OperationType:uint8_t {
 } dictdb_op_type_t;
 
 /**
- * Database operation.
+ * Request message.
  */
 typedef struct {
   dictdb_op_type_t type;
   std::string word;
-} dictdb_op_t;
+} dictdb_request_t;
 
 /**
- * Encode an operation into bytes.
+ * Encode a request message into bytes.
  */
-void encode_operation(std::vector<std::byte>& buffer, const dictdb_op_t& operation);
+void encode_request(std::vector<std::byte>& buffer, const dictdb_request_t& request);
 
 /**
- * Decode an operation from bytes.
+ * Decode a request message from bytes.
  */
-void decode_operation(std::vector<std::byte>& buffer, dictdb_op_t& operation);
+void decode_request(std::vector<std::byte>& buffer, dictdb_request_t& request);

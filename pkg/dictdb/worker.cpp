@@ -42,28 +42,28 @@ void worker(std::shared_ptr<dictdb_worker_context_t> context) {
 
     buffer.resize(bytes);
 
-    dictdb_op_t operation;
-    decode_operation(buffer, operation);
+    dictdb_request_t request;
+    decode_request(buffer, request);
 
     // XXX
     uint8_t result = 0;
 
-    switch (operation.type) {
+    switch (request.type) {
       case OperationType::PING:
         result = 128;
         break;
 
       case OperationType::INSERT:
-        context->db->words.insert(std::pair<std::string, bool>(operation.word, true));
+        context->db->words.insert(std::pair<std::string, bool>(request.word, true));
         result = 1;
         break;
 
       case OperationType::SEARCH:
-        result = context->db->words.count(operation.word);
+        result = context->db->words.count(request.word);
         break;
 
       case OperationType::DELETE:
-        context->db->words.erase(operation.word);
+        context->db->words.erase(request.word);
         result = 1;
         break;
     }

@@ -24,20 +24,20 @@ int main(int argc, char* argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  dictdb_op_t operation;
-  operation.word = args[1];
+  dictdb_request_t request;
+  request.word = args[1];
 
-  if (operation.word.size() > 254) {
+  if (request.word.size() > 254) {
     std::cerr << "word is too large" << std::endl;
     exit(EXIT_FAILURE);
   }
 
   if (args[0] == "insert") {
-    operation.type = OperationType::INSERT;
+    request.type = OperationType::INSERT;
   } else if (args[0] == "search") {
-    operation.type = OperationType::SEARCH;
+    request.type = OperationType::SEARCH;
   } else if (args[0] == "delete") {
-    operation.type = OperationType::DELETE;
+    request.type = OperationType::DELETE;
   } else {
     std::cerr << "unknown command: " << args[0] << std::endl;
     exit(EXIT_FAILURE);
@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
 
   // XXX
   std::vector<std::byte> buffer;
-  encode_operation(buffer, operation);
+  encode_request(buffer, request);
 
   ssize_t bytes = write(client_socket, &buffer[0], buffer.size());
   if (bytes < static_cast<ssize_t>(buffer.size())) {
