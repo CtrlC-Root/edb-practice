@@ -13,9 +13,6 @@
 #include <unistd.h>     // close
 #include <poll.h>       // pollfd, poll
 
-// Intel TBB
-#include <oneapi/tbb/concurrent_queue.h>
-
 // DictDB
 #include "data.h"
 #include "worker.h"
@@ -90,7 +87,7 @@ int main(int argc, char* argv[]) {
   }
 
   // XXX
-  std::shared_ptr<tbb::concurrent_queue<int>> client_sockets = std::make_shared<tbb::concurrent_queue<int>>();
+  std::shared_ptr<dictdb_socket_queue_t> client_sockets = std::make_shared<dictdb_socket_queue_t>();
 
   // XXX
   std::vector<std::shared_ptr<dictdb_worker_context_t>> workers;
