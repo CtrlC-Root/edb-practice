@@ -1,11 +1,14 @@
 #include "protocol.h"
 
 // C++ Standard Library
-#include <cassert>
+#include <cassert>    // assert
+#include <limits>     // std::numeric_limits
 
 
 // Encode a request message into bytes.
 void encode_request(std::vector<std::byte>& buffer, const dictdb_request_t& request) {
+  assert((2 + request.word.size()) < std::numeric_limits<uint8_t>::max());  // Message size
+
   buffer.clear(); // O(n) for n = buffer.size()
   buffer.reserve(2 + request.word.size()); // O(n) for n = buffer.size()
   buffer.push_back(static_cast<std::byte>(2 + request.word.size()));  // ~O(1)
