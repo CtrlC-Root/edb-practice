@@ -26,5 +26,5 @@ void decode_operation(std::vector<std::byte>& buffer, dictdb_op_t& operation) {
   operation.type = OperationType{buffer[0]}; // O(1)
   operation.word = std::string(
     reinterpret_cast<const char *>(&buffer[2]),
-    static_cast<uint8_t>(buffer[1])); // ???
+    static_cast<uint8_t>(buffer[1])); // O(n) for n = buffer[1]
 }
