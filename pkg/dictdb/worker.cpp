@@ -13,9 +13,23 @@ void worker(std::shared_ptr<dictdb_worker_context_t> context) {
   std::vector<std::byte> buffer;
 
   while (!context->cancel) {
+    // retrieve the next client socket
+    int client_socket;
+    while (!context->client_sockets->try_pop(client_socket)) {
+      if (context->cancel) {
+        break;
+      } else {
+        // TODO: sleep a bit
+      }
+    }
+
+    if (context->cancel) {
+      break;
+    }
+
     // https://man7.org/linux/man-pages/man2/read.2.html
     buffer.resize(2048);
-    bytes = read(context->client_socket, &buffer[0], buffer.size());
+    bytes = read(client_socket, &buffer[0], buffer.size());
     if (bytes == -1) {
       // TODO: handle error
       break;
@@ -55,13 +69,13 @@ void worker(std::shared_ptr<dictdb_worker_context_t> context) {
     }
 
     // XXX
-    bytes = write(context->client_socket, (char*) &result, 1);
+    bytes = write(client_socket, (char*) &result, 1);
     if (bytes < 1) {
       // TODO: handle error
       break;
     }
-  }
 
-  // XXX
-  close(context->client_socket);
+    // XXX
+    close(client_socket);
+  }
 }

@@ -6,5 +6,5 @@ def build(ctx):
     ctx.program(
         target='dictdb',
         source=['main.cpp', 'worker.cpp'],
-        lib=['tbb'],
+        lib=['pthread', 'tbb'],
         use='libdictdb')

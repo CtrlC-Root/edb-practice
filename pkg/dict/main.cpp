@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
   encode_operation(buffer, operation);
 
   ssize_t bytes = write(client_socket, &buffer[0], buffer.size());
-  if (bytes < buffer.size()) {
+  if (bytes < static_cast<ssize_t>(buffer.size())) {
     std::cerr << "partial write" << std::endl;
   }
 

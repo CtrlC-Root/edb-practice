@@ -13,6 +13,9 @@
 #include <unistd.h>     // close
 #include <poll.h>       // pollfd, poll
 
+// Intel TBB
+#include <oneapi/tbb/concurrent_queue.h>
+
 // DictDB
 #include "data.h"
 #include "worker.h"
@@ -87,14 +90,27 @@ int main(int argc, char* argv[]) {
   }
 
   // XXX
+  std::shared_ptr<tbb::concurrent_queue<int>> client_sockets = std::make_shared<tbb::concurrent_queue<int>>();
+
+  // XXX
+  std::vector<std::shared_ptr<dictdb_worker_context_t>> workers;
+
+  for (int i = 0; i < 8; i++) {
+    auto context = std::make_shared<dictdb_worker_context_t>();
+    context->db = db;
+    context->client_sockets = client_sockets;
+    context->cancel = false;
+    context->thread = std::make_shared<std::thread>(worker, context);
+
+    workers.push_back(context);
+  }
+
+  // XXX
   // https://www.man7.org/linux/man-pages/man2/poll.2.html
   struct pollfd server_poll;
   server_poll.fd = server_socket;
   server_poll.events = POLLIN;
   server_poll.revents = 0;
-
-  // XXX
-  std::vector<std::shared_ptr<dictdb_worker_context_t>> workers;
 
   // process requests
   running = true;
@@ -114,19 +130,20 @@ int main(int argc, char* argv[]) {
     }
 
     // XXX
-    auto context = std::make_shared<dictdb_worker_context_t>();
-    context->db = db;
-    context->client_socket = accept(server_socket, NULL, NULL);
-    context->cancel = false;
-    context->thread = std::make_shared<std::thread>(worker, context);
-
-    workers.push_back(context);
+    int client_socket = accept(server_socket, NULL, NULL);
+    client_sockets->push(client_socket);
   }
 
-  // XXX
+  // XXX: stop worker threads
   for (auto context : workers) {
     context->cancel = true;
     context->thread->join();
+  }
+
+  // TODO: close open client sockets
+  int client_socket;
+  while (client_sockets->try_pop(client_socket)) {
+    close(client_socket); // TODO: error handling
   }
 
   // XXX
