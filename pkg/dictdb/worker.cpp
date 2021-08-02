@@ -28,7 +28,7 @@ void worker(std::shared_ptr<dictdb_worker_context_t> context) {
     }
 
     // https://man7.org/linux/man-pages/man2/read.2.html
-    buffer.resize(2048);
+    buffer.resize(255); // maximum message size is one byte
     bytes = read(client_socket, &buffer[0], buffer.size());
     if (bytes == -1) {
       // TODO: handle error
@@ -46,31 +46,45 @@ void worker(std::shared_ptr<dictdb_worker_context_t> context) {
     decode_request(buffer, request);
 
     // XXX
-    uint8_t result = 0;
+    dictdb_response_t response;
 
     switch (request.type) {
-      case OperationType::PING:
-        result = 128;
+      case OperationType::PING: {
+        response.result = OperationResult::SUCCESS;
         break;
+      }
 
-      case OperationType::INSERT:
-        context->db->words.insert(std::pair<std::string, bool>(request.word, true));
-        result = 1;
-        break;
+      case OperationType::INSERT: {
+        auto value = std::pair<std::string, bool>(request.word, true);
+        response.result = context->db->words.insert(value) ?
+          OperationResult::SUCCESS :
+          OperationResult::FAILURE;
 
-      case OperationType::SEARCH:
-        result = context->db->words.count(request.word);
         break;
+      }
 
-      case OperationType::DELETE:
-        context->db->words.erase(request.word);
-        result = 1;
+      case OperationType::SEARCH: {
+        auto count = context->db->words.count(request.word);
+        response.result = (count > 0) ?
+          OperationResult::SUCCESS :
+          OperationResult::FAILURE;
+
         break;
+      }
+
+      case OperationType::DELETE: {
+        response.result = context->db->words.erase(request.word) ?
+          OperationResult::SUCCESS :
+          OperationResult::FAILURE;
+
+        break;
+      }
     }
 
     // XXX
-    bytes = write(client_socket, (char*) &result, 1);
-    if (bytes < 1) {
+    encode_response(buffer, response);
+    bytes = write(client_socket, (char*) &buffer[0], buffer.size());
+    if (bytes < static_cast<ssize_t>(buffer.size())) {
       // TODO: handle error
       break;
     }

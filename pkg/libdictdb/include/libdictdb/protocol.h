@@ -24,6 +24,39 @@ typedef struct {
 } dictdb_request_t;
 
 /**
+ * Operation result.
+ */
+typedef enum class OperationResult:uint8_t {
+  /**
+   * Server error.
+   */
+  ERROR = 0,
+
+  /**
+   * Ping: Server is alive and can process requests.
+   * Insert: Word inserted.
+   * Delete: Word deleted.
+   * Search: Word found.
+   */
+  SUCCESS = 1,
+
+  /**
+   * Ping: Server is not able to process requests.
+   * Insert: Word already present.
+   * Delete: Word already absent.
+   * Search: Word not found.
+   */
+  FAILURE = 2
+} dictdb_op_result_t;
+
+/**
+ * Response message.
+ */
+typedef struct {
+  dictdb_op_result_t result;
+} dictdb_response_t;
+
+/**
  * Encode a request message into bytes.
  */
 void encode_request(std::vector<std::byte>& buffer, const dictdb_request_t& request);
@@ -32,3 +65,13 @@ void encode_request(std::vector<std::byte>& buffer, const dictdb_request_t& requ
  * Decode a request message from bytes.
  */
 void decode_request(std::vector<std::byte>& buffer, dictdb_request_t& request);
+
+/**
+ * Encode a response message into bytes.
+ */
+void encode_response(std::vector<std::byte>& buffer, const dictdb_response_t& response);
+
+/**
+ * Decode a response message from bytes.
+ */
+void decode_response(std::vector<std::byte>& buffer, dictdb_response_t& response);

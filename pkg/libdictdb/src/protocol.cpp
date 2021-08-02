@@ -32,3 +32,17 @@ void decode_request(std::vector<std::byte>& buffer, dictdb_request_t& request) {
     reinterpret_cast<const char *>(&buffer[2]),
     static_cast<uint8_t>(buffer[0]) - 2); // O(n) for n = buffer[1]
 }
+
+// Encode a response message into bytes.
+void encode_response(std::vector<std::byte>& buffer, const dictdb_response_t& response) {
+  buffer.clear(); // O(n) for n = buffer.size()
+  buffer.reserve(1);  // O(n) for n = buffer.size()
+  buffer.push_back(static_cast<std::byte>(response.result));  // ~(O1)
+}
+
+// Decode a response message from bytes.
+void decode_response(std::vector<std::byte>& buffer, dictdb_response_t& response) {
+  assert(buffer.size() == 1); // Result byte
+
+  response.result = OperationResult{buffer[0]}; // O(1)
+}

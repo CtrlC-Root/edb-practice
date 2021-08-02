@@ -72,13 +72,15 @@ int main(int argc, char* argv[]) {
     std::cerr << "partial write" << std::endl;
   }
 
-  uint8_t result;
-  bytes = read(client_socket, &result, 1);
-  if (bytes != 1) {
+  // XXX
+  buffer.resize(1);
+  bytes = read(client_socket, &buffer[0], buffer.size());
+  if (bytes != static_cast<ssize_t>(buffer.size())) {
     std::cerr << "partial read" << std::endl;
   }
 
-  std::cout << "recv(1): " << (int) result << std::endl;
+  dictdb_response_t response;
+  decode_response(buffer, response);
 
   // XXX
   rv = close(client_socket);
@@ -89,5 +91,15 @@ int main(int argc, char* argv[]) {
   }
 
   // successful exit
-  exit(EXIT_SUCCESS);
+  switch (response.result) {
+    case OperationResult::ERROR:
+      std::cerr << "operation failed" << std::endl;
+      exit(EXIT_FAILURE);
+
+    case OperationResult::SUCCESS:
+      exit(EXIT_SUCCESS);
+
+    case OperationResult::FAILURE:
+      exit(EXIT_FAILURE);
+  }
 }
