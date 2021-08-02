@@ -7,7 +7,7 @@
 // C standard library
 #include <signal.h>     // sigaction, signal
 
-// XXX
+// POSIX
 #include <sys/socket.h> // socket, AF_*?
 #include <sys/un.h>     // sockaddr_un
 #include <unistd.h>     // close
@@ -24,11 +24,11 @@ bool running = false;
 // Process signals.
 void handle_signal(int sig) {
   switch (sig) {
-    // sent by process manager to indicate we should reload
+    // XXX: reload daemon configuration files and reopen file descriptors
     case SIGHUP:
-      // XXX: reload daemon configuration files and reopen file descriptors
       break;
 
+    // stop running
     case SIGTERM:
     case SIGINT:
       running = false;
@@ -62,17 +62,18 @@ int main(int argc, char* argv[]) {
   // initialize the database
   std::shared_ptr<dictdb_t> db = std::make_shared<dictdb_t>();
 
-  // XXX
+  // create the server socket
   int server_socket = socket(AF_UNIX, SOCK_STREAM, 0);
   if (server_socket == -1) {
     std::cerr << "failed to create socket" << std::endl;
     exit(EXIT_FAILURE);
   }
 
+  // bind the server socket
   struct sockaddr_un addr;
   memset(&addr, 0, sizeof(struct sockaddr_un));
   addr.sun_family = AF_UNIX;
-  strncpy(addr.sun_path, "socket", sizeof(addr.sun_path) - 1);
+  strncpy(addr.sun_path, "socket", sizeof(addr.sun_path) - 1);  // XXX: unix socket file path
 
   int rv = bind(server_socket, (struct sockaddr *) &addr, sizeof(struct sockaddr_un));
   if (rv == -1) {
@@ -86,10 +87,8 @@ int main(int argc, char* argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  // XXX
-  std::shared_ptr<dictdb_socket_queue_t> client_sockets = std::make_shared<dictdb_socket_queue_t>();
-
-  // XXX
+  // create a pool of worker threads
+  auto client_sockets = std::make_shared<dictdb_socket_queue_t>();
   std::vector<std::shared_ptr<dictdb_worker_context_t>> workers;
 
   for (int i = 0; i < 8; i++) {
@@ -102,17 +101,17 @@ int main(int argc, char* argv[]) {
     workers.push_back(context);
   }
 
-  // XXX
+  // initialize poll data to monitor the server socket for new connections
   // https://www.man7.org/linux/man-pages/man2/poll.2.html
   struct pollfd server_poll;
   server_poll.fd = server_socket;
   server_poll.events = POLLIN;
   server_poll.revents = 0;
 
-  // process requests
+  // accept new client connections while the server is running
   running = true;
   while (running) {
-    // https://www.man7.org/linux/man-pages/man2/poll.2.html
+    // poll for client connections
     server_poll.revents = 0;
     rv = poll(&server_poll, 1, 200);
 
@@ -126,33 +125,40 @@ int main(int argc, char* argv[]) {
       continue;
     }
 
-    // XXX
+    // accept the connection and enqueue it for a worker thread to handle
     int client_socket = accept(server_socket, NULL, NULL);
     client_sockets->push(client_socket);
   }
 
-  // XXX: stop worker threads
+  // stop worker threads
   for (auto context : workers) {
     context->cancel = true;
     context->thread->join();
   }
 
-  // TODO: close open client sockets
+  // close and remaining open client sockets
   int client_socket;
   while (client_sockets->try_pop(client_socket)) {
-    close(client_socket); // TODO: error handling
+    rv = close(client_socket);
+    if (rv == -1) {
+      std::cerr << "failed to close client socket" << std::endl;
+
+      // don't exit to ensure proper cleanup
+      // exit(EXIT_FAILURE);
+    }
   }
 
-  // XXX
+  // close the server socket
   rv = close(server_socket);
   if (rv == -1) {
-    // XXX: check return value, guessed about -1
     std::cerr << "failed to close server socket" << std::endl;
-    exit(EXIT_FAILURE);
+
+    // don't exit to ensure we clean up the socket files
+    // exit(EXIT_FAILURE);
   }
 
-  // XXX: remove socket file
-  rv = remove("socket");
+  // remove the socket file
+  rv = remove("socket");  // XXX: unix socket file path
   if (rv == -1) {
     std::cerr << "failed to remove socket file" << std::endl;
     exit(EXIT_FAILURE);

@@ -26,6 +26,12 @@ void worker(std::shared_ptr<dictdb_worker_context_t> context) {
       break;
     }
 
+    // TODO: poll socket for data before reading to avoid blocking on read()
+    // and not being able to quit if the server shuts down
+
+    // TODO: receive and process messages in a loop until the socket closes
+    // instead of closing the socket after a single request/response pair
+
     // receive and decode the request message
     receive_message(client_socket, buffer);
     dictdb_request_t request;
