@@ -75,3 +75,13 @@ void encode_response(std::vector<std::byte>& buffer, const dictdb_response_t& re
  * Decode a response message from bytes.
  */
 void decode_response(std::vector<std::byte>& buffer, dictdb_response_t& response);
+
+/**
+ * Write a message from a buffer to a file.
+ */
+void send_message(int fd, std::vector<std::byte>& buffer);
+
+/**
+ * Read a message from a file into a buffer.
+ */
+void receive_message(int fd, std::vector<std::byte>& buffer);

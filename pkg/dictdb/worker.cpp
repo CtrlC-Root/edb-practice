@@ -9,7 +9,6 @@
 
 // Worker entry point.
 void worker(std::shared_ptr<dictdb_worker_context_t> context) {
-  ssize_t bytes;
   std::vector<std::byte> buffer;
 
   while (!context->cancel) {
@@ -28,21 +27,7 @@ void worker(std::shared_ptr<dictdb_worker_context_t> context) {
     }
 
     // receive and decode the request message
-    // https://man7.org/linux/man-pages/man2/read.2.html
-    buffer.resize(255); // maximum message size is one byte
-    bytes = read(client_socket, &buffer[0], buffer.size());
-    if (bytes == -1) {
-      // TODO: handle error
-      break;
-    }
-
-    if (bytes == 0) {
-      // XXX: no more to read
-      break;
-    }
-
-    buffer.resize(bytes);
-
+    receive_message(client_socket, buffer);
     dictdb_request_t request;
     decode_request(buffer, request);
 
@@ -83,13 +68,9 @@ void worker(std::shared_ptr<dictdb_worker_context_t> context) {
 
     // encode and send the response message
     encode_response(buffer, response);
-    bytes = write(client_socket, (char*) &buffer[0], buffer.size());
-    if (bytes < static_cast<ssize_t>(buffer.size())) {
-      // TODO: handle error
-      break;
-    }
+    send_message(client_socket, buffer);
 
-    // XXX
+    // close the client socket
     close(client_socket);
   }
 }

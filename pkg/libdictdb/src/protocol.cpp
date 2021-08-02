@@ -4,6 +4,8 @@
 #include <cassert>    // assert
 #include <limits>     // std::numeric_limits
 
+// POSIX
+#include <unistd.h>   // read, write
 
 // Encode a request message into bytes.
 void encode_request(std::vector<std::byte>& buffer, const dictdb_request_t& request) {
@@ -47,4 +49,53 @@ void decode_response(std::vector<std::byte>& buffer, dictdb_response_t& response
   assert(static_cast<uint8_t>(buffer[0]) == buffer.size()); // Message size
 
   response.result = OperationResult{buffer[1]}; // O(1)
+}
+
+// Write a message from a buffer to a file.
+void send_message(int fd, std::vector<std::byte>& buffer) {
+  assert(buffer.size() > 1);  // At least the size byte and one more byte after
+
+  uint32_t index = 0;
+  ssize_t bytes = 0;
+
+  do {
+    // https://man7.org/linux/man-pages/man2/write.2.html
+    bytes = write(fd, &buffer[index], buffer.size() - index);
+    if (bytes == 0) {
+      // TODO: wrote no bytes (socket is likely closed)
+      break;
+    }
+
+    index += bytes;
+  } while (bytes != -1 && index < buffer.size());
+
+  // TODO: proper error handling
+  assert(bytes != -1);
+}
+
+// Read a message from a file into a buffer.
+void receive_message(int fd, std::vector<std::byte>& buffer) {
+  buffer.resize(std::numeric_limits<uint8_t>::max()); // O(1) (n=255)
+
+  uint32_t index = 0;
+  ssize_t bytes = 0;
+
+  do {
+    // https://man7.org/linux/man-pages/man2/read.2.html
+    bytes = read(fd, &buffer[index], buffer.size() - index);
+    if (bytes == 0) {
+      // TODO: read no bytes (socket is likely closed)
+      break;
+    }
+
+    if (index == 0) {
+      // resize the buffer based on the message size received as the first byte
+      buffer.resize(static_cast<uint8_t>(buffer[0])); // O(n) for n = buffer[0]
+    }
+
+    index += bytes;
+  } while (bytes != -1 && index < buffer.size());
+
+  // TODO: proper error handling
+  assert(bytes != -1);
 }

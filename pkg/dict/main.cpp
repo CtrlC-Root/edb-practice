@@ -43,47 +43,36 @@ int main(int argc, char* argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  // XXX
+  // create the socket
   int client_socket = socket(AF_UNIX, SOCK_STREAM, 0);
   if (client_socket == -1) {
     std::cerr << "failed to create socket" << std::endl;
     exit(EXIT_FAILURE);
   }
 
-  // XXX
+  // connect the socket
   struct sockaddr_un addr;
   memset(&addr, 0, sizeof(struct sockaddr_un));
   addr.sun_family = AF_UNIX;
-  strncpy(addr.sun_path, "socket", sizeof(addr.sun_path) - 1);
+  strncpy(addr.sun_path, "socket", sizeof(addr.sun_path) - 1);  // XXX: unix socket file path
 
-  // XXX
   int rv = connect(client_socket, (struct sockaddr *) &addr, sizeof(struct sockaddr_un));
   if (rv == -1) {
     std::cerr << "failed to connect socket" << std::endl;
     exit(EXIT_FAILURE);
   }
 
-  // XXX
+  // encode and send the request
   std::vector<std::byte> buffer;
   encode_request(buffer, request);
+  send_message(client_socket, buffer);
 
-  ssize_t bytes = write(client_socket, &buffer[0], buffer.size());
-  if (bytes < static_cast<ssize_t>(buffer.size())) {
-    std::cerr << "partial write" << std::endl;
-  }
-
-  // XXX
-  buffer.resize(255);
-  bytes = read(client_socket, &buffer[0], buffer.size());
-  // if (bytes != static_cast<ssize_t>(buffer.size())) {
-  //   std::cerr << "partial read" << std::endl;
-  // }
-
-  buffer.resize(bytes);
+  // receive the response and decode it
+  receive_message(client_socket, buffer);
   dictdb_response_t response;
   decode_response(buffer, response);
 
-  // XXX
+  // close the socket
   rv = close(client_socket);
   if (rv == -1) {
     // XXX: check return value, guessed about -1
