@@ -36,13 +36,15 @@ void decode_request(std::vector<std::byte>& buffer, dictdb_request_t& request) {
 // Encode a response message into bytes.
 void encode_response(std::vector<std::byte>& buffer, const dictdb_response_t& response) {
   buffer.clear(); // O(n) for n = buffer.size()
-  buffer.reserve(1);  // O(n) for n = buffer.size()
+  buffer.reserve(2);  // O(n) for n = buffer.size()
+  buffer.push_back(static_cast<std::byte>(2));  // ~O(1)
   buffer.push_back(static_cast<std::byte>(response.result));  // ~(O1)
 }
 
 // Decode a response message from bytes.
 void decode_response(std::vector<std::byte>& buffer, dictdb_response_t& response) {
-  assert(buffer.size() == 1); // Result byte
+  assert(buffer.size() == 2); // Size and Result bytes
+  assert(static_cast<uint8_t>(buffer[0]) == buffer.size()); // Message size
 
-  response.result = OperationResult{buffer[0]}; // O(1)
+  response.result = OperationResult{buffer[1]}; // O(1)
 }

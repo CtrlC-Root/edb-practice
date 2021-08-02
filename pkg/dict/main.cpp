@@ -73,12 +73,13 @@ int main(int argc, char* argv[]) {
   }
 
   // XXX
-  buffer.resize(1);
+  buffer.resize(255);
   bytes = read(client_socket, &buffer[0], buffer.size());
-  if (bytes != static_cast<ssize_t>(buffer.size())) {
-    std::cerr << "partial read" << std::endl;
-  }
+  // if (bytes != static_cast<ssize_t>(buffer.size())) {
+  //   std::cerr << "partial read" << std::endl;
+  // }
 
+  buffer.resize(bytes);
   dictdb_response_t response;
   decode_response(buffer, response);
 

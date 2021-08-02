@@ -27,6 +27,7 @@ void worker(std::shared_ptr<dictdb_worker_context_t> context) {
       break;
     }
 
+    // receive and decode the request message
     // https://man7.org/linux/man-pages/man2/read.2.html
     buffer.resize(255); // maximum message size is one byte
     bytes = read(client_socket, &buffer[0], buffer.size());
@@ -45,9 +46,8 @@ void worker(std::shared_ptr<dictdb_worker_context_t> context) {
     dictdb_request_t request;
     decode_request(buffer, request);
 
-    // XXX
+    // process the request operation and generate a response
     dictdb_response_t response;
-
     switch (request.type) {
       case OperationType::PING: {
         response.result = OperationResult::SUCCESS;
@@ -81,7 +81,7 @@ void worker(std::shared_ptr<dictdb_worker_context_t> context) {
       }
     }
 
-    // XXX
+    // encode and send the response message
     encode_response(buffer, response);
     bytes = write(client_socket, (char*) &buffer[0], buffer.size());
     if (bytes < static_cast<ssize_t>(buffer.size())) {
