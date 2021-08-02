@@ -4,7 +4,7 @@
 #include <unistd.h>     // close
 
 // DictDB
-#include <protocol.h>
+#include <libdictdb/protocol.h>
 
 
 // Worker entry point.

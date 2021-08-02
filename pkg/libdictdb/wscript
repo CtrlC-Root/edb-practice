@@ -5,5 +5,6 @@ def build(ctx):
 
     ctx.stlib(
         target='libdictdb',
-        source=['protocol.cpp'],
-        export_includes='.')
+        source=['src/protocol.cpp'],
+        includes='./include/libdictdb',
+        export_includes='./include')
