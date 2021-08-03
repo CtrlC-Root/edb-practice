@@ -34,3 +34,8 @@ Run the script against the depedency graph file:
 ```bash
 ./deadlock.py -i sample.json
 ```
+
+## References
+
+* [NetworkX](https://networkx.org/)
+  * [API](https://networkx.org/documentation/stable/reference/index.html)
