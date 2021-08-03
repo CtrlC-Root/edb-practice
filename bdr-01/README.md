@@ -6,6 +6,8 @@ An in-memory word dictionary.
 
 ![Architecture Diagram](architecture.png)
 
+Components:
+
 * **DictDB Server**: Responsible for storing the word database in memory and
   processing client requests to insert, search, or delete words.
   * **Client Queue**: Unbounded lock-free concurrent queue used to distribute
@@ -15,7 +17,7 @@ An in-memory word dictionary.
 * **Dict Client**: Responsible for translating command line arguments into
   requests for the server and displaying the responses to the end user.
 
-Some design notes:
+Design notes:
 
 * An authoritative process is likely useful here regardless of the communication
   method used between clients in order to initialize the empty word database
