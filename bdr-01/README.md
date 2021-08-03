@@ -1,4 +1,4 @@
-# edb
+# DictDB
 
 An in-memory word dictionary.
 
