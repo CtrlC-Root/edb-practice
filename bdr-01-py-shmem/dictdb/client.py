@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from dictdb import DatabaseClient
+from .db import DatabaseClient
 
 
 def main():

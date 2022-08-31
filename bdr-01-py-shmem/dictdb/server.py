@@ -6,7 +6,7 @@ import argparse
 import sys
 import time
 
-from dictdb import Database
+from .db import Database
 
 
 def main():

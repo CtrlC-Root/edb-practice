@@ -5,11 +5,9 @@ import time
 import string
 import random
 import argparse
-import tempfile
 import subprocess
-from multiprocessing.pool import Pool
 from collections import namedtuple
-
+from multiprocessing.pool import Pool
 
 ClientRun = namedtuple('ClientRun', ['runtime', 'returncode'])
 
@@ -67,9 +65,7 @@ def main():
 
     # start the server
     print(">> Start server")
-    server_process = subprocess.Popen([
-        'python', './server.py',
-        '-n', args.memory_name])
+    server_process = subprocess.Popen(['dictdb', '-n', args.memory_name])
 
     time.sleep(1.0)
     if server_process.returncode:
@@ -77,9 +73,7 @@ def main():
         return
 
     # determine common client arguments
-    client_args = [
-        'python', './client.py',
-        '-n', args.memory_name]
+    client_args = ['dict', '-n', args.memory_name]
 
     # create a process pool
     with Pool(processes=args.client_processes) as pool:
@@ -148,4 +142,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
