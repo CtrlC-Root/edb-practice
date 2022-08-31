@@ -32,8 +32,12 @@ class Entry(ctypes.Structure):
         for index, letter in enumerate(word):
             letter_ascii = ord(letter)
             shift_value = (hash.value // (index + 1)) % 5
-            buffer[index % 8] += letter_ascii + \
-                index + (letter_ascii >> shift_value)
+            buffer[index % 8] = sum([
+                buffer[index % 8],
+                letter_ascii,
+                index,
+                (letter_ascii >> shift_value)
+            ]) % 256
 
         return hash.value
 
