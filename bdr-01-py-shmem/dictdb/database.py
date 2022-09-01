@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ctypes
+import math
 import mmap
 import typing as t
 
@@ -20,11 +21,18 @@ class SharedResources:
         self._dictionary = None
 
     def open(self):
+        # calculate target memory segment size in multiple of page size
+        requested_size = ctypes.sizeof(Dictionary)
+        target_size = (
+            posix_ipc.PAGE_SIZE * math.ceil(requested_size / posix_ipc.PAGE_SIZE))
+
+        assert target_size > requested_size, "invalid shared memory segment size"
+
         # create or open shared memory segment
         self._memory = posix_ipc.SharedMemory(
             name=f'/{self._name}',
             flags=posix_ipc.O_CREX if self._owner else 0,
-            size=ctypes.sizeof(Dictionary))
+            size=target_size if self._owner else 0)
 
         # map shared memory segment to in-memory byte buffer
         # https://docs.python.org/3/library/mmap.html
