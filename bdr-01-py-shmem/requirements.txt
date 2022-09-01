@@ -1,2 +1,0 @@
-# https://semanchuk.com/philip/posix_ipc/
-posix-ipc==1.0.5
