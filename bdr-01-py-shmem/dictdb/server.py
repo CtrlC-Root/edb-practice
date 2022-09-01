@@ -23,7 +23,8 @@ def main():
 
     # handle signals
     stop_requested = False
-    def handle_signal(signal_number, signal_frame):
+    def handle_signal(signal_number, frame):
+        nonlocal stop_requested
         stop_requested = True
 
     signal.signal(signal.SIGINT, handle_signal)
@@ -33,6 +34,10 @@ def main():
     with Database(name=args.memory_name) as database:
         # keep running until asked to stop
         while not stop_requested:
+            # print statistics
+            print(f"Word Count: {database.words}")
+
+            # rate limit to avoid using CPU
             time.sleep(1)
 
 
