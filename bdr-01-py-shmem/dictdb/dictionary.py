@@ -4,9 +4,9 @@ import ctypes
 import typing as t
 
 
-LIMIT_WORD_COUNT = 10 ** 6  # 1 million
+LIMIT_WORD_COUNT = 1 * (10 ** 6)  # 2 million
 LIMIT_WORD_SIZE = 32  # https://en.wikipedia.org/wiki/Longest_word_in_English
-LIMIT_BUCKET_SIZE = 10
+LIMIT_BUCKET_SIZE = 100
 
 
 # https://docs.python.org/3/library/ctypes.html#structures-and-unions
@@ -54,7 +54,7 @@ class Dictionary(ctypes.Structure):
     _fields_ = [
         ('count', ctypes.c_uint64),
         # https://docs.python.org/3/library/ctypes.html#arrays
-        ('entries', Entry * LIMIT_WORD_COUNT)
+        ('entries', Entry * (LIMIT_WORD_COUNT * 2))
     ]
 
     def insert(self, word: str) -> t.Optional[int]:
@@ -66,12 +66,13 @@ class Dictionary(ctypes.Structure):
         hash = Entry.hash_word(word)
         initial_index = hash % len(self.entries)
         for index in range(initial_index, initial_index + LIMIT_BUCKET_SIZE + 1):
-            if self.entries[index].hash == hash:
+            entry = self.entries[index % len(self.entries)]
+            if entry.hash == hash and entry.word == word:
                 return index
 
-            elif self.entries[index].hash == 0:
-                self.entries[index].hash = hash
-                self.entries[index].word = word
+            elif entry.hash == 0:
+                entry.hash = hash
+                entry.word = word
                 self.count += 1
                 return index
 
@@ -85,7 +86,8 @@ class Dictionary(ctypes.Structure):
         hash = Entry.hash_word(word)
         initial_index = hash % len(self.entries)
         for index in range(initial_index, initial_index + LIMIT_BUCKET_SIZE + 1):
-            if self.entries[index].hash == hash:
+            entry = self.entries[index % len(self.entries)]
+            if entry.hash == hash and entry.word == word:
                 return index
 
         return None
@@ -98,8 +100,9 @@ class Dictionary(ctypes.Structure):
         hash = Entry.hash_word(word)
         initial_index = hash % len(self.entries)
         for index in range(initial_index, initial_index + LIMIT_BUCKET_SIZE + 1):
-            if self.entries[index].hash == hash:
-                self.entries[index].hash = 0
+            entry = self.entries[index % len(self.entries)]
+            if entry.hash == hash and entry.word == word:
+                entry.hash = 0
                 self.count -= 1
                 return index
 
