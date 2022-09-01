@@ -65,7 +65,9 @@ def main():
 
     # start the server
     print(">> Start server")
-    server_process = subprocess.Popen(['dictdb', '-n', args.memory_name])
+    server_process = subprocess.Popen([
+        'dictdb',
+        '--memory-name', args.memory_name])
 
     time.sleep(1.0)
     if server_process.returncode:
@@ -73,7 +75,7 @@ def main():
         return
 
     # determine common client arguments
-    client_args = ['dict', '-n', args.memory_name]
+    client_args = ['dict', '--memory-name', args.memory_name]
 
     # create a process pool
     with Pool(processes=args.client_processes) as pool:
