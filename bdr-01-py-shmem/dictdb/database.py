@@ -63,9 +63,8 @@ class SharedResources:
             self._semaphore.unlink()
             self._memory.unlink()
 
-        else:
-            # close semaphore
-            self._semaphore.close()
+        # close semaphore
+        self._semaphore.close()
 
 
 class Database(SharedResources):
@@ -78,6 +77,10 @@ class Database(SharedResources):
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
+
+    @property
+    def words(self) -> int:
+        return self._dictionary.count
 
 
 class DatabaseClient(SharedResources):
