@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import signal
 import sys
 import time
 
@@ -20,18 +21,19 @@ def main():
 
     args = parser.parse_args()
 
-    # host the database until asked to stop
-    print("Starting")
-    with Database(name=args.memory_name) as database:
-        try:
-            print("Running", end="")
-            while True:
-                print(".", end="")
-                sys.stdout.flush()
-                time.sleep(1)
+    # handle signals
+    stop_requested = False
+    def handle_signal(signal_number, signal_frame):
+        stop_requested = True
 
-        except KeyboardInterrupt:
-            print("Quitting")
+    signal.signal(signal.SIGINT, handle_signal)
+    signal.signal(signal.SIGTERM, handle_signal)
+
+    # create the database
+    with Database(name=args.memory_name) as database:
+        # keep running until asked to stop
+        while not stop_requested:
+            time.sleep(1)
 
 
 if __name__ == '__main__':
