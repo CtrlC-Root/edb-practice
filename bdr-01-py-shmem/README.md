@@ -62,6 +62,14 @@ dict search foo bar one two
 dict delete foo one three
 ```
 
+## Tests
+
+Run unit tests:
+
+```bash
+python -m unittest
+```
+
 ## Benchmark
 
 Run the benchmarking script:
